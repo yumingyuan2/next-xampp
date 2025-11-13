@@ -214,7 +214,7 @@ class IndexPage {
                 // 移除过渡效果
                 transition.remove();
             }
-        }, 500);
+        }, 200);
     }
 
     // 修复：处理社交链接
@@ -223,7 +223,7 @@ class IndexPage {
         const platform = link.textContent.trim();
         
         const socialUrls = {
-            '📧': 'mailto:support@cbzstudio.com',
+            '📧': 'mailto:gitcbz@outlook.com.com',
             '💬': '#',
             '🐦': '#',
             '📷': '#'
@@ -360,7 +360,7 @@ class IndexPage {
                         this.navigateToAI();
                         break;
                 }
-            }, 1000);
+            }, 200);
         } else {
             if (typeof Utils !== 'undefined' && Utils.showToast) {
                 Utils.showToast(`未找到"${query}"相关功能`, 'warning');
@@ -484,14 +484,14 @@ class IndexPage {
     // 修复：显示关于信息
     showAbout() {
         if (typeof Utils !== 'undefined' && Utils.showToast) {
-            Utils.showToast('CBZ Studio - 创新科技，引领未来', 'info');
+            Utils.showToast('CBZ Studio - Code the world.', 'info');
         }
     }
 
     // 修复：显示联系方式
     showContact() {
         if (typeof Utils !== 'undefined' && Utils.showToast) {
-            Utils.showToast('联系我们：support@cbzstudio.com', 'info');
+            Utils.showToast('联系我们：gitcbz@outlook.com.com', 'info');
         }
     }
 
