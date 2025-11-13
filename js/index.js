@@ -1,3 +1,7 @@
+/*
+    ©CBZ Studio版权所有
+    Version 0.0.2beta Fix1
+*/
 // 主页脚本
 class IndexPage {
     constructor() {
@@ -7,7 +11,12 @@ class IndexPage {
             return;
         }
         
-        this.eggCode = '20130211';
+        // 支持多个彩蛋代码，对应不同的视频
+        this.eggCodes = {
+            '20130211': '/files/egg.mp4',  //cbz表示：ヾ(≧▽≦*)o
+            '20130219': '/files/egg2.mp4'  //测试使用
+        };
+        this.lastEggCode = null;
         this.eggTriggerCount = 0;
         this.eggTriggerTimeout = null;
         this.searchInput = null;
@@ -49,6 +58,55 @@ class IndexPage {
         this.initKeyboardEgg();
         this.initSearchEgg();
         this.checkLoginStatus();
+        // 检查是否需要根据当前日期自动触发彩蛋（2月11日和2月19日）
+        try {
+            this.checkAutoTriggerEgg();
+        } catch (e) {
+            console.warn('自动触发彩蛋检查失败', e);
+        }
+    }
+
+    // 新增：根据日期自动触发彩蛋（避免在非期望日期触发）
+    checkAutoTriggerEgg() {
+        try {
+            const today = new Date();
+            const month = today.getMonth() + 1; // 1-12
+            const day = today.getDate();
+
+            if (month === 2 && day === 11 && this.eggCodes['20130211']) {
+                const year = today.getFullYear();
+                const key = `egg_auto_triggered_20130211_${year}`;
+                // 每年仅触发一次（持久化到本地存储，包含年份）
+                if (typeof Utils !== 'undefined' && Utils.storage && Utils.storage.get(key)) return;
+                this.lastEggCode = '20130211';
+                // 稍微延迟，确保页面其他初始化完成
+                setTimeout(() => {
+                    const modal = document.getElementById('eggModal');
+                    if (!modal || !modal.classList.contains('active')) {
+                        this.triggerSearchEgg();
+                        try { if (typeof Utils !== 'undefined' && Utils.storage) Utils.storage.set(key, true); } catch(e) {}
+                    }
+                }, 600);
+                return;
+            }
+
+            if (month === 2 && day === 19 && this.eggCodes['20130219']) {
+                const year = today.getFullYear();
+                const key = `egg_auto_triggered_20130219_${year}`;
+                if (typeof Utils !== 'undefined' && Utils.storage && Utils.storage.get(key)) return;
+                this.lastEggCode = '20130219';
+                setTimeout(() => {
+                    const modal = document.getElementById('eggModal');
+                    if (!modal || !modal.classList.contains('active')) {
+                        this.triggerSearchEgg();
+                        try { if (typeof Utils !== 'undefined' && Utils.storage) Utils.storage.set(key, true); } catch(e) {}
+                    }
+                }, 600);
+                return;
+            }
+        } catch (e) {
+            console.error('checkAutoTriggerEgg error', e);
+        }
     }
 
     // 新增：初始化彩蛋统计
@@ -106,6 +164,24 @@ class IndexPage {
                 this.closeEggModal();
             }
         });
+
+        // 取消 logo 上任何跳转行为，防止点击图标跳转
+        const logoEl = document.getElementById('mainLogo');
+        if (logoEl) {
+            try {
+                // 移除内联 onclick
+                logoEl.onclick = null;
+                logoEl.removeAttribute && logoEl.removeAttribute('onclick');
+            } catch (e) {}
+            // 绑定一个阻止传播的空处理，确保不会触发其它全局跳转
+            logoEl.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof Utils !== 'undefined' && Utils.showToast) {
+                    Utils.showToast('Logo 已禁用跳转', 'info');
+                }
+            });
+        }
 
         // ESC键关闭彩蛋模态框
         document.addEventListener('keydown', (e) => {
@@ -293,8 +369,9 @@ class IndexPage {
 
     // 修复：处理搜索输入
     handleSearchInput(value) {
-        // 检查是否输入了彩蛋代码
-        if (value === this.eggCode) {
+        // 检查是否输入了彩蛋代码（支持多个）
+        if (this.eggCodes[value]) {
+            this.lastEggCode = value;
             const searchBox = document.querySelector('.search-box');
             if (searchBox) {
                 searchBox.classList.add('egg-triggered');
@@ -312,8 +389,9 @@ class IndexPage {
     handleSearchSubmit(value) {
         const trimmedValue = value.trim();
         
-        // 检查彩蛋代码
-        if (trimmedValue === this.eggCode) {
+        // 检查彩蛋代码（支持多个）
+        if (this.eggCodes[trimmedValue]) {
+            this.lastEggCode = trimmedValue;
             this.triggerSearchEgg();
             return;
         }
@@ -411,7 +489,7 @@ class IndexPage {
             this.createSearchEggParticles(searchBox);
         }
         
-        // 延迟显示彩蛋模态框
+        // 延迟显示彩蛋模态框（在 showEggModal 中会根据 lastEggCode 选择视频）
         setTimeout(() => {
             this.showEggModal();
         }, 2000);
@@ -462,6 +540,16 @@ class IndexPage {
     initEggVideo() {
         const video = document.getElementById('eggVideo');
         if (video) {
+            // 根据 lastEggCode 动态设置视频源
+            try {
+                if (this.lastEggCode && this.eggCodes[this.lastEggCode]) {
+                    // 直接设置 video.src 会替换所有 <source>，然后 load()
+                    video.src = this.eggCodes[this.lastEggCode];
+                    video.load();
+                }
+            } catch (e) {
+                console.warn('设置彩蛋视频源失败，使用默认源', e);
+            }
             // 重置视频
             video.currentTime = 0;
             
@@ -497,14 +585,8 @@ class IndexPage {
 
     // 其他方法保持不变...
     initScaleHandling() {
-        // 防止双击缩放
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) {
-                e.preventDefault();
-            }
-        });
-
-        // 防止 pinch 缩放
+        // 保留双击防缩放，但不要阻止多指/gesture 缩放（允许用户缩放以提高可访问性）
+        // 仅在 touchend 中处理双击防缩放
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
             const now = Date.now();
