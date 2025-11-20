@@ -76,8 +76,8 @@ class TalkSystem {
     }
 
     authenticate(password, type = 'user') {
-        const userPassword = 'user123'; // 用户密码
-        const adminPassword = 'admin123'; // 管理员密码
+        const userPassword = 'CBZtzUser123'; 
+        const adminPassword = 'CBZStudioTZAdmin130211';
         
         if (type === 'user' && password === userPassword) {
             const userData = {
