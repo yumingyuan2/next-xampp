@@ -2,50 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- viewport: 允许合理缩放以改善可访问性，避免完全禁止缩放 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="format-detection" content="email=no">
-    <title>CBZ Studio - Code the world.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CBZ Studio - 创新科技，引领未来</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/index.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
-    <!-- 强制设置基础字体 -->
-    <style>
-        /* 强制防止缩放 */
-        html {
-            font-size: 16px !important;
-            -webkit-text-size-adjust: 100% !important;
-            -ms-text-size-adjust: 100% !important;
-            -moz-text-size-adjust: 100% !important;
-            text-size-adjust: 100% !important;
-        }
-        
-        body {
-            font-size: 16px !important;
-            -webkit-text-size-adjust: 100% !important;
-            -ms-text-size-adjust: 100% !important;
-            -moz-text-size-adjust: 100% !important;
-            text-size-adjust: 100% !important;
-            zoom: 1 !important;
-            -webkit-transform: scale(1) !important;
-            transform: scale(1) !important;
-        }
-        
-        /* iOS Safari */
-        @supports (-webkit-touch-callout: none) {
-            body {
-                -webkit-text-size-adjust: 100% !important;
-                -webkit-transform: scale(1) !important;
-                transform: scale(1) !important;
-            }
-        }
-    </style>
+    <!-- 防止缩放的meta标签（保留兼容性：使用更通用的 mobile-web-app-capable） -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
     <!-- 增强背景动画 -->
@@ -102,13 +70,8 @@
                         type="text" 
                         id="searchInput" 
                         class="search-input" 
-                        placeholder="搜索..."
+                        placeholder="搜索功能、输入日期触发彩蛋..."
                         autocomplete="off"
-                        inputmode="text"
-                        autocapitalize="off"
-                        autocorrect="off"
-                        spellcheck="false"
-                        style="font-size: 16px !important; -webkit-text-size-adjust: 100%;"
                     >
                     <button class="search-btn" id="searchBtn">
                         <span>🔍</span>
@@ -119,6 +82,8 @@
                     <div class="suggestion-item">本地云盘</div>
                     <div class="suggestion-item">学习中心</div>
                     <div class="suggestion-item">AI工具箱</div>
+                    <div class="suggestion-item">帖子</div>
+                    <div class="suggestion-item">聊天室</div>
                 </div>
             </div>
             
@@ -151,7 +116,7 @@
                 <div class="feature-icon">🎮</div>
                 <h2 class="feature-title">游戏中心</h2>
                 <p class="feature-description">
-                    精心打造的游戏平台，提供多种经典游戏，让用户在休闲娱乐中享受科技带来的乐趣。
+                    精心打造的HTML5游戏平台，提供多种经典游戏，让用户在休闲娱乐中享受科技带来的乐趣。
                 </p>
                 <button class="feature-button" onclick="navigateToGame()">进入游戏</button>
             </div>
@@ -171,7 +136,7 @@
                 <div class="feature-icon">📚</div>
                 <h2 class="feature-title">学习中心</h2>
                 <p class="feature-description">
-                    数学学习服务教育平台，通过游戏化学习方式让知识获取更加有趣高效。
+                    专业的在线教育平台，提供数学学习服务，通过游戏化学习方式让知识获取更加有趣高效。
                 </p>
                 <button class="feature-button" onclick="navigateToLearn()">开始学习</button>
             </div>
@@ -181,9 +146,32 @@
                 <div class="feature-icon">🤖</div>
                 <h2 class="feature-title">AI工具箱</h2>
                 <p class="feature-description">
-                    集成的智能工具平台，提供代码生成、智能对话等功能，助力开发者提升效率。
+                    集成OpenAI API的智能工具平台，提供代码生成、智能对话等功能，助力开发者提升效率。
                 </p>
                 <button class="feature-button" onclick="navigateToAI()">立即体验</button>
+            </div>
+
+            <!-- 帖子系统卡片 -->
+            <div class="feature-card talk" data-target="talk">
+                <div class="feature-icon">📝</div>
+                <h2 class="feature-title">帖子系统</h2>
+                <p class="feature-description">
+                    全新的帖子分享平台，支持用户发帖、评论互动、管理员管理等功能，打造活跃的社区交流环境。
+                </p>
+                <button class="feature-button" onclick="navigateToTalk()">进入帖子</button>
+            </div>
+
+            <!-- 聊天室卡片 -->
+            <div class="feature-card chat external" data-target="chat">
+                <div class="feature-icon">💬</div>
+                <h2 class="feature-title">聊天室</h2>
+                <p class="feature-description">
+                    实时在线聊天室，支持多人同时在线交流，分享想法，结识朋友，打造温馨的聊天社区。
+                </p>
+                <button class="feature-button" onclick="navigateToChat()">
+                    进入聊天
+                    <span class="external-link-icon">🔗</span>
+                </button>
             </div>
         </div>
     </div>
@@ -194,46 +182,64 @@
             <p>©2025 CBZ Studio 版权所有</p>
             <div class="social-links">
                 <a href="mailto:support@cbzstudio.com" class="social-link" title="邮箱">📧</a>
-                <a href="#" class="social-link" title="微信" onclick="Utils.showToast('微信功能开发中...', 'info'); return false;">💬</a>
-                <a href="#" class="social-link" title="Twitter" onclick="Utils.showToast('Twitter功能开发中...', 'info'); return false;">🐦</a>
-                <a href="#" class="social-link" title="Instagram" onclick="Utils.showToast('Instagram功能开发中...', 'info'); return false;">📷</a>
             </div>
         </div>
     </footer>
+
 
     <!-- 错误提示 -->
     <div class="error-tooltip" id="errorTooltip"></div>
 
     <script src="js/common.js"></script>
     <script src="js/index.js"></script>
+    <script>
+        // 后备全局导航函数：确保 onclick 调用不会因加载顺序错误而报错
+        (function() {
+            // helper: try to use Navigation.goToTalk/goToChat if available
+            function fallbackTalk() {
+                if (window.indexPage && typeof window.indexPage.navigateToTalk === 'function') {
+                    return window.indexPage.navigateToTalk();
+                }
+                if (window.Navigation && typeof window.Navigation.goToTalk === 'function') {
+                    return window.Navigation.goToTalk();
+                }
+                // 最后退回到直接跳转，使用根路径以避免相对路径问题
+                window.location.href = '/talk/index.html';
+            }
+
+            function fallbackChat() {
+                if (window.indexPage && typeof window.indexPage.navigateToChat === 'function') {
+                    return window.indexPage.navigateToChat();
+                }
+                if (window.Navigation && typeof window.Navigation.goToChat === 'function') {
+                    return window.Navigation.goToChat();
+                }
+                // 外部聊天室，打开新窗口
+                try {
+                    window.open('https://chat-pro.cbzstudio.qzz.io', '_blank');
+                } catch (e) {
+                    // 作为最后手段，导航到一个提示页面或显示错误
+                    window.location.href = '/talk/index.html';
+                }
+            }
+
+            if (typeof window.navigateToTalk !== 'function') {
+                window.navigateToTalk = fallbackTalk;
+            }
+            if (typeof window.navigateToChat !== 'function') {
+                window.navigateToChat = fallbackChat;
+            }
+        })();
+    </script>
     
     <script>
-        // 强制防止缩放的JavaScript
+        // Logo图片加载处理
         document.addEventListener('DOMContentLoaded', function() {
-            // 强制设置字体大小
-            document.documentElement.style.fontSize = '16px';
-            document.body.style.fontSize = '16px';
-            
-            // 防止双击缩放
-            let lastTouchEnd = 0;
-            document.addEventListener('touchend', function (event) {
-                const now = (new Date()).getTime();
-                if (now - lastTouchEnd <= 300) {
-                    event.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, false);
-            
-            // 保留双击防缩放，但不要阻止多指/gesture 缩放（允许用户缩放以提高可访问性）
-            // 如果需要可以再做更细粒度处理；目前移除对多指和 gesture 的 preventDefault
-            
-            // Logo图片加载处理
             const logo = document.getElementById('mainLogo');
             const img = new Image();
             
             img.onload = function() {
-                // 使用绝对路径，确保在任何路由下都能正确加载
-                logo.style.backgroundImage = 'url(/files/logo.PNG)';
+                logo.style.backgroundImage = 'url(files/logo.PNG)';
                 logo.textContent = '';
                 logo.classList.remove('error');
             };
@@ -243,8 +249,7 @@
                 logo.classList.add('error');
             };
             
-            // 使用绝对路径以避免相对路径带来的不同页面定位问题
-            img.src = '/files/logo.PNG';
+            img.src = 'files/logo.PNG';
             
             // 设置超时处理
             setTimeout(() => {
@@ -253,20 +258,6 @@
                     logo.classList.add('error');
                 }
             }, 3000);
-        });
-        
-        // 移除强制缩放/缩放复位逻辑（会造成布局问题），改用更温和的防缩放处理。
-        // 防止键盘弹出时页面异常滚动，微调为在输入聚焦时保持视口平稳（不强制缩放）
-        window.addEventListener('focusin', function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                // 确保输入框可见，但不做强制缩放或 zoom 操作
-                setTimeout(function() {
-                    // 仅在需要时微调滚动，避免跳动
-                    if (window.innerHeight < 600) {
-                        window.scrollTo(0, 0);
-                    }
-                }, 250);
-            }
         });
     </script>
 </body>

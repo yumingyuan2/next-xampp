@@ -1,0 +1,10 @@
+name = "cf-chat-app"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# 注意：删除了 [site] 部分，因为我们把 HTML 搬进 JS 里了
+
+[[d1_databases]]
+binding = "DB"
+database_name = "prod-chat-db"
+database_id = "97c78330-6397-41d6-90ea-db63815e5bdb" # 替换这里！

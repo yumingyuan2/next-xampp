@@ -1279,3 +1279,107 @@ img, video, canvas {
         transform: translateY(0.625rem) rotate(240deg); /* 10px */
     }
 }
+
+
+.feature-card.talk {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1));
+    border: 2px solid rgba(255, 193, 7, 0.2);
+}
+
+.feature-card.talk:hover {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.15));
+    border-color: rgba(255, 193, 7, 0.4);
+    box-shadow: 0 20px 40px rgba(255, 193, 7, 0.2);
+}
+
+.feature-card.talk .feature-button {
+    background: linear-gradient(45deg, #ffc107, #ff9800);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.feature-card.talk .feature-button:hover {
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+}
+
+.feature-card.chat {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(0, 150, 136, 0.1));
+    border: 2px solid rgba(76, 175, 80, 0.2);
+}
+
+.feature-card.chat:hover {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(0, 150, 136, 0.15));
+    border-color: rgba(76, 175, 80, 0.4);
+    box-shadow: 0 20px 40px rgba(76, 175, 80, 0.2);
+}
+
+.feature-card.chat .feature-button {
+    background: linear-gradient(45deg, #4caf50, #009688);
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.feature-card.chat .feature-button:hover {
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+}
+
+/* 外部链接特殊样式 */
+.feature-card.external .feature-button {
+    background: linear-gradient(45deg, #9c27b0, #673ab7);
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.feature-card.external .feature-button:hover {
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.5);
+}
+
+/* 外部链接图标 */
+.external-link-icon {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.875em;
+    opacity: 0.8;
+}
+
+/* 更新功能卡片容器为6列 */
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    gap: 3vw;
+    justify-content: center;
+    margin-bottom: 40px;
+    margin-bottom: 5vh;
+    max-width: 1200px;
+    max-width: 90vw;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+    padding: 0 20px;
+    padding: 0 4vw;
+}
+
+/* 新功能动画 */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px) translateZ(0);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateZ(0);
+    }
+}
+
+.feature-card:nth-child(5),
+.feature-card:nth-child(6) {
+    animation: slideInRight 0.8s ease-out;
+    animation-fill-mode: both;
+}
+
+.feature-card:nth-child(5) {
+    animation-delay: 0.2s;
+}
+
+.feature-card:nth-child(6) {
+    animation-delay: 0.4s;
+}

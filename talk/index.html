@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBZ帖子 - 用户端</title>
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="css/talk.css">
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="../index.html" class="logo">
+                    <span>📝</span>
+                    <span>CBZ帖子</span>
+                </a>
+                <nav class="nav-menu">
+                    <a href="index.html" class="nav-link active">浏览帖子</a>
+                    <a href="user/index.html" class="nav-link">发帖</a>
+                    <a href="admin/index.html" class="nav-link">管理</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索帖子...">
+                    <button class="btn btn-primary btn-sm" onclick="searchPosts()">搜索</button>
+                </div>
+                <div class="filter-buttons">
+                    <select class="form-select" id="sortSelect" onchange="sortPosts()">
+                        <option value="latest">最新发布</option>
+                        <option value="popular">最受欢迎</option>
+                    </select>
+                    <select class="form-select" id="tagFilter" onchange="filterByTag()">
+                        <option value="">所有标签</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 帖子列表 -->
+            <div class="post-list" id="postList">
+                <!-- 帖子将动态加载 -->
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页将动态生成 -->
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/common.js"></script>
+    <script src="js/talk.js"></script>
+    <script>
+        // 页面变量
+        let currentPage = 1;
+        const postsPerPage = 10;
+        let currentPosts = [];
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+            loadTags();
+        });
+
+        // 加载帖子
+        function loadPosts() {
+            const options = {
+                sort: document.getElementById('sortSelect').value,
+                search: document.getElementById('searchInput').value,
+                tag: document.getElementById('tagFilter').value
+            };
+            
+            currentPosts = talkSystem.getPosts(options);
+            renderPosts();
+            renderPagination();
+        }
+
+        // 渲染帖子
+        function renderPosts() {
+            const postList = document.getElementById('postList');
+            const start = (currentPage - 1) * postsPerPage;
+            const end = start + postsPerPage;
+            const postsToShow = currentPosts.slice(start, end);
+
+            if (postsToShow.length === 0) {
+                postList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div class="empty-text">暂无帖子</div>
+                    </div>
+                `;
+                return;
+            }
+
+            postList.innerHTML = postsToShow.map(post => `
+                <div class="post-item" onclick="viewPost(${post.id})">
+                    <div class="post-header">
+                        <div class="post-author">
+                            <div class="author-avatar">${post.avatar}</div>
+                            <div class="author-info">
+                                <div class="author-name">${TalkUtils.escapeHtml(post.author)}</div>
+                                <div class="post-time">${talkSystem.formatTime(post.time)}</div>
+                            </div>
+                        </div>
+                        <div class="post-actions">
+                            ${post.pinned ? '<span class="tag">📌 置顶</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="post-body">
+                        <h3 class="post-title">${TalkUtils.escapeHtml(post.title)}</h3>
+                        <div class="post-content">${TalkUtils.truncateText(TalkUtils.escapeHtml(post.content))}</div>
+                        <div class="post-tags">
+                            ${post.tags.map(tag => `<span class="tag">${TalkUtils.escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="post-footer">
+                        <div class="post-stats">
+                            <div class="stat-item" onclick="event.stopPropagation(); likePost(${post.id})">
+                                <span>👍</span>
+                                <span>${post.likes}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>💬</span>
+                                <span>${post.comments.length}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>👁️</span>
+                                <span>${post.views}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(currentPosts.length / postsPerPage);
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = `
+                <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    上一页
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `
+                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+
+            paginationHTML += `
+                <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    下一页
+                </button>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // 切换页面
+        function changePage(page) {
+            const totalPages = Math.ceil(currentPosts.length / postsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderPosts();
+            renderPagination();
+            window.scrollTo(0, 0);
+        }
+
+        // 搜索帖子
+        function searchPosts() {
+            currentPage = 1;
+            loadPosts();
+        }
+
+        // 排序帖子
+        function sortPosts() {
+            currentPage = 1;
+            loadPosts();
+        }
+
+        // 按标签过滤
+        function filterByTag() {
+            currentPage = 1;
+            loadPosts();
+        }
+
+        // 加载标签
+        function loadTags() {
+            const tagFilter = document.getElementById('tagFilter');
+            const tags = talkSystem.getAllTags();
+            
+            tagFilter.innerHTML = '<option value="">所有标签</option>' + 
+                tags.map(tag => `<option value="${TalkUtils.escapeHtml(tag)}">${TalkUtils.escapeHtml(tag)}</option>`).join('');
+        }
+
+        // 查看帖子详情
+        function viewPost(postId) {
+            talkSystem.incrementViews(postId);
+            const post = talkSystem.getPost(postId);
+            
+            if (!post) return;
+            
+            // 创建模态框显示帖子详情
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>${TalkUtils.escapeHtml(post.title)}</h2>
+                        <button class="btn btn-outline btn-sm" onclick="this.closest('.modal').remove()">✖</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="post-detail-header">
+                            <div class="post-author">
+                                <div class="author-avatar">${post.avatar}</div>
+                                <div class="author-info">
+                                    <div class="author-name">${TalkUtils.escapeHtml(post.author)}</div>
+                                    <div class="post-time">${new Date(post.time).toLocaleString('zh-CN')}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-detail-content">
+                            <p>${TalkUtils.escapeHtml(post.content).replace(/\n/g, '<br>')}</p>
+                        </div>
+                        <div class="post-tags">
+                            ${post.tags.map(tag => `<span class="tag">${TalkUtils.escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                        <div class="post-stats">
+                            <div class="stat-item">
+                                <span>👍</span>
+                                <span>${post.likes}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>💬</span>
+                                <span>${post.comments.length}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>👁️</span>
+                                <span>${post.views}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 评论区 -->
+                        <div class="comments-section">
+                            <h3>评论 (${post.comments.length})</h3>
+                            
+                            <!-- 评论表单 -->
+                            <div class="comment-form">
+                                <div class="form-group">
+                                    <textarea class="form-textarea" id="commentContent-${postId}" placeholder="写下你的评论..." rows="3"></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="addComment(${postId})">发表评论</button>
+                            </div>
+                            
+                            <!-- 评论列表 -->
+                            <div class="comment-list" id="commentList-${postId}">
+                                ${post.comments.map(comment => `
+                                    <div class="comment-item">
+                                        <div class="comment-avatar">${comment.avatar}</div>
+                                        <div class="comment-content">
+                                            <div class="comment-header">
+                                                <span class="comment-author">${TalkUtils.escapeHtml(comment.author)}</span>
+                                                <span class="comment-time">${talkSystem.formatTime(comment.time)}</span>
+                                            </div>
+                                            <div class="comment-text">${TalkUtils.escapeHtml(comment.content)}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 添加模态框样式
+            if (!document.querySelector('#modalStyles')) {
+                const style = document.createElement('style');
+                style.id = 'modalStyles';
+                style.textContent = `
+                    .modal {
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.5);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10000;
+                    }
+                    
+                    .modal-content {
+                        background: white;
+                        border-radius: 1rem;
+                        max-width: 800px;
+                        width: 90%;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        margin: 20px;
+                    }
+                    
+                    .modal-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 1.5rem;
+                        border-bottom: 1px solid var(--border-color);
+                    }
+                    
+                    .modal-body {
+                        padding: 1.5rem;
+                    }
+                    
+                    .post-detail-header {
+                        margin-bottom: 1rem;
+                    }
+                    
+                    .post-detail-content {
+                        margin-bottom: 1rem;
+                        line-height: 1.6;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(modal);
+        }
+
+        // 点赞帖子
+        function likePost(postId) {
+            const likes = talkSystem.likePost(postId);
+            TalkUtils.showMessage('点赞成功！', 'success');
+            loadPosts(); // 重新加载帖子列表
+        }
+
+        // 添加评论
+        function addComment(postId) {
+            const content = document.getElementById(`commentContent-${postId}`).value.trim();
+            
+            if (!content) {
+                TalkUtils.showMessage('请输入评论内容', 'warning');
+                return;
+            }
+            
+            const comment = talkSystem.addComment(postId, { content });
+            
+            if (comment) {
+                TalkUtils.showMessage('评论发表成功！', 'success');
+                document.getElementById(`commentContent-${postId}`).value = '';
+                
+                // 重新加载评论列表
+                const post = talkSystem.getPost(postId);
+                const commentList = document.getElementById(`commentList-${postId}`);
+                
+                commentList.innerHTML = post.comments.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-avatar">${c.avatar}</div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">${TalkUtils.escapeHtml(c.author)}</span>
+                                <span class="comment-time">${talkSystem.formatTime(c.time)}</span>
+                            </div>
+                            <div class="comment-text">${TalkUtils.escapeHtml(c.content)}</div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // 更新评论数
+                loadPosts();
+            }
+        }
+
+        // 监听Enter键搜索
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPosts();
+            }
+        });
+    </script>
+</body>
+</html>

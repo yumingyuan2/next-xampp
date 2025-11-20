@@ -1,0 +1,13 @@
+name = "chathub-workers"
+main = "src/index.js"
+compatibility_date = "2024-04-15"
+
+# 定义 Durable Object 绑定
+[[durable_objects.bindings]]
+name = "ROOMS" # 在代码中通过 env.ROOMS 访问
+class_name = "ChatRoom"
+
+# 定义 Durable Object 迁移
+[[migrations]]
+tag = "v1" # 版本标签
+new_classes = ["ChatRoom"] # 新增的 Durable Object 类名

@@ -224,27 +224,138 @@ class IndexPage {
     }
 
     // 修复：基于标题导航
-    navigateBasedOnTitle(title) {
-        switch(title) {
-            case '游戏中心':
-                this.navigateToGame();
-                break;
-            case '本地云盘':
-                this.navigateToCloud();
-                break;
-            case '学习中心':
-                this.navigateToLearn();
-                break;
-            case 'AI工具箱':
-                this.navigateToAI();
-                break;
-            default:
-                console.log('未知标题:', title);
-                if (typeof Utils !== 'undefined' && Utils.showToast) {
-                    Utils.showToast('未知的功能模块', 'error');
-                }
+    // 在IndexPage类中找到navigateBasedOnTitle方法，更新为：
+
+navigateBasedOnTitle(title) {
+    switch(title) {
+        case '游戏中心':
+            this.navigateToGame();
+            break;
+        case '本地云盘':
+            this.navigateToCloud();
+            break;
+        case '学习中心':
+            this.navigateToLearn();
+            break;
+        case 'AI工具箱':
+            this.navigateToAI();
+            break;
+        case '帖子系统':
+            this.navigateToTalk();
+            break;
+        case '聊天室':
+            this.navigateToChat();
+            break;
+        default:
+            console.log('未知标题:', title);
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('未知的功能模块', 'error');
+            }
+    }
+}
+
+// 添加新方法
+navigateToTalk() {
+    this.navigateWithLoading('talk/index.html', '帖子系统');
+}
+
+navigateToChat() {
+    // 外部链接需要特殊处理
+    if (typeof Utils !== 'undefined' && Utils.showToast) {
+        Utils.showToast('正在跳转到聊天室...', 'info');
+    }
+    
+    // 添加页面过渡效果
+    const transition = document.createElement('div');
+    transition.className = 'page-transition active';
+    document.body.appendChild(transition);
+    
+    // 延迟跳转到外部链接
+    setTimeout(() => {
+        try {
+            window.open('https://chat-pro.cbzstudio.qzz.io', '_blank');
+        } catch (error) {
+            console.error('跳转失败:', error);
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('跳转失败，请手动访问: chat-pro.cbzstudio.qzz.io', 'error');
+            }
+        }
+        // 移除过渡效果
+        setTimeout(() => {
+            transition.remove();
+        }, 500);
+    }, 500);
+}
+
+// 更新performSearch方法
+performSearch(query) {
+    const searchMap = {
+        '游戏': 'game',
+        '游戏中心': 'game',
+        '云盘': 'cloud',
+        '本地云盘': 'cloud',
+        '学习': 'learn',
+        '学习中心': 'learn',
+        'ai': 'ai',
+        '人工智能': 'ai',
+        'ai工具箱': 'ai',
+        '帖子': 'talk',
+        '帖子系统': 'talk',
+        '聊天': 'chat',
+        '聊天室': 'chat'
+    };
+
+    const target = searchMap[query.toLowerCase()];
+    if (target) {
+        if (typeof Utils !== 'undefined' && Utils.showToast) {
+            Utils.showToast(`正在跳转到${query}...`, 'info');
+        }
+        setTimeout(() => {
+            switch(target) {
+                case 'game':
+                    this.navigateToGame();
+                    break;
+                case 'cloud':
+                    this.navigateToCloud();
+                    break;
+                case 'learn':
+                    this.navigateToLearn();
+                    break;
+                case 'ai':
+                    this.navigateToAI();
+                    break;
+                case 'talk':
+                    this.navigateToTalk();
+                    break;
+                case 'chat':
+                    this.navigateToChat();
+                    break;
+            }
+        }, 1000);
+    } else {
+        if (typeof Utils !== 'undefined' && Utils.showToast) {
+            Utils.showToast(`未找到"${query}"相关功能`, 'warning');
         }
     }
+}
+
+// 更新全局函数
+window.navigateToTalk = function() {
+    if (window.indexPage) {
+        window.indexPage.navigateToTalk();
+    } else {
+        window.location.href = 'talk/index.html';
+    }
+};
+
+window.navigateToChat = function() {
+    if (window.indexPage) {
+        window.indexPage.navigateToChat();
+    } else {
+        window.open('https://chat-pro.cbzstudio.qzz.io', '_blank');
+    }
+};
+
 
     // 修复：导航到游戏中心
     navigateToGame() {
@@ -299,7 +410,7 @@ class IndexPage {
         const platform = link.textContent.trim();
         
         const socialUrls = {
-            '📧': 'mailto:gitcbz@outlook.com.com',
+            '📧': 'mailto:gitcbz@outlook.com',
             '💬': '#',
             '🐦': '#',
             '📷': '#'

@@ -50,6 +50,35 @@ const Navigation = {
         this.safeNavigate('ai/index.html', 'AI工具箱');
     },
     
+    // 跳转到帖子系统
+    goToTalk() {
+        // 使用根路径，避免相对路径引起的错误
+        this.safeNavigate('/talk/index.html', '帖子系统');
+    },
+
+    // 跳转到聊天室（外部链接，打开新窗口）
+    goToChat() {
+        try {
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('正在跳转到聊天室...', 'info');
+            }
+            // 添加页面过渡效果
+            const transition = document.createElement('div');
+            transition.className = 'page-transition active';
+            document.body.appendChild(transition);
+
+            setTimeout(() => {
+                window.open('https://chat-pro.cbzstudio.qzz.io', '_blank');
+                setTimeout(() => transition.remove(), 500);
+            }, 300);
+        } catch (error) {
+            console.error('跳转到聊天室失败:', error);
+            if (typeof Utils !== 'undefined' && Utils.showToast) {
+                Utils.showToast('跳转失败，请手动打开聊天室', 'error');
+            }
+        }
+    },
+    
     // 跳转到登录页面
     goToLogin() {
         this.safeNavigate('login.html', '登录页面');
@@ -92,6 +121,12 @@ const Navigation = {
                         break;
                     case 'learn':
                         this.goToLearn();
+                        break;
+                    case 'talk':
+                        this.goToTalk();
+                        break;
+                    case 'chat':
+                        this.goToChat();
                         break;
                     case 'ai':
                         this.goToAI();

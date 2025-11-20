@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare 免费聊天室</title>
+    <style>
+        :root { --bg: #1a1a1a; --card: #2d2d2d; --text: #e0e0e0; --accent: #f6821f; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; height: 100vh; }
+        #app { width: 100%; max-width: 600px; display: flex; flex-direction: column; background: var(--card); height: 100%; border-left: 1px solid #444; border-right: 1px solid #444; }
+        header { padding: 15px; background: #00000050; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 8px 12px; border-radius: 8px; background: #3d3d3d; max-width: 80%; word-wrap: break-word; }
+        .message.mine { align-self: flex-end; background: #00509e; }
+        .meta { font-size: 0.75em; color: #888; margin-bottom: 4px; }
+        #input-area { padding: 15px; border-top: 1px solid #444; display: flex; gap: 10px; background: #252525; }
+        input { background: #1a1a1a; border: 1px solid #444; color: white; padding: 10px; border-radius: 4px; outline: none; }
+        #username { width: 80px; }
+        #content { flex: 1; }
+        button { background: var(--accent); border: none; color: white; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <span>💬 公共聊天室</span>
+            <span id="status" style="font-size:12px; color:lime;">● 在线</span>
+        </header>
+        <div id="chat-box">
+            <div style="text-align:center; color:#666; margin-top:20px;">加载中...</div>
+        </div>
+        <form id="input-area">
+            <input type="text" id="username" placeholder="昵称" required maxlength="10">
+            <input type="text" id="content" placeholder="输入消息..." required autocomplete="off">
+            <button type="submit" id="send-btn">发送</button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = "/api/messages"; // 相对路径，自动匹配当前域名
+        const chatBox = document.getElementById('chat-box');
+        const form = document.getElementById('input-area');
+        const userDetails = localStorage.getItem('chat_user') || `访客${Math.floor(Math.random()*1000)}`;
+        document.getElementById('username').value = userDetails;
+
+        let lastMessageTime = 0;
+
+        // 时间格式化
+        function formatTime(ts) {
+            return new Date(ts).toLocaleTimeString();
+        }
+
+        // 渲染消息
+        function renderMessages(messages) {
+            // 如果没有新消息，不重绘（简单优化）
+            if (messages.length > 0 && messages[messages.length-1].created_at <= lastMessageTime) return;
+            
+            chatBox.innerHTML = messages.map(msg => {
+                const isMine = msg.username === document.getElementById('username').value;
+                return `
+                    <div class="message ${isMine ? 'mine' : ''}">
+                        <div class="meta">${msg.username} · ${formatTime(msg.created_at)}</div>
+                        <div class="text">${escapeHtml(msg.content)}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 滚动到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+            if(messages.length > 0) lastMessageTime = messages[messages.length-1].created_at;
+        }
+
+        // 防XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 获取消息 (轮询)
+        async function fetchMessages() {
+            try {
+                const res = await fetch(API_URL);
+                if (res.ok) {
+                    const data = await res.json();
+                    renderMessages(data);
+                    document.getElementById('status').style.color = 'lime';
+                }
+            } catch (e) {
+                console.error("Fetch error:", e);
+                document.getElementById('status').style.color = 'red';
+            }
+        }
+
+        // 发送消息
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const content = document.getElementById('content').value;
+            const btn = document.getElementById('send-btn');
+
+            if(!content.trim()) return;
+
+            localStorage.setItem('chat_user', username);
+            btn.disabled = true;
+            btn.innerText = "发送中...";
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, content })
+                });
+                if (res.ok) {
+                    document.getElementById('content').value = '';
+                    fetchMessages(); // 立即刷新
+                } else {
+                    alert('发送失败');
+                }
+            } catch (e) {
+                alert('网络错误');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "发送";
+            }
+        });
+
+        // 启动轮询 (每2秒)
+        setInterval(fetchMessages, 2000);
+        fetchMessages();
+    </script>
+</body>
+</html>
